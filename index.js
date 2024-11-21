@@ -14,8 +14,6 @@ function startGame() {
 
 }
 
-
-
 function fetchCategory() {
     const api = "https://the-trivia-api.com/v2/categories";
 
@@ -38,11 +36,6 @@ function fetchCategory() {
     })
     .catch(error=> console.error("error", error))
 };
-
- 
-
-
-
 
 let easyQuestions = [];
 let mediumQuestions = [];
@@ -115,7 +108,6 @@ function display() {
     }
 }
 
-
 var  player1Answer
 let scores = {
     player1: 0,
@@ -126,7 +118,6 @@ function updateScoreDisplay() {
     document.getElementById("player1-score").textContent = `Player 1 Score: ${scores.player1}`;
     document.getElementById("player2-score").textContent = `Player 2 Score: ${scores.player2}`;
 }
-
 
 var allAnswers;
 
@@ -182,15 +173,12 @@ function nextQuestion() {
 }
 
 
-
 function submitAnswers() {
 
     document.getElementById("submit").style.display = "block";
     document.getElementById("next").style.display = "block";
     showMarks();
 }
-
-
 
 
 function showMarks() {
@@ -211,14 +199,10 @@ function showMarks() {
         winner = "No one";
     }
 
-
     document.getElementById("player1-score").textContent = `Player 1 (${player1Name}) Score: ${scores.player1}`;
     document.getElementById("player2-score").textContent = `Player 2 (${player2Name}) Score: ${scores.player2}`;
     document.getElementById("winner").textContent = `Winner: ${winner}`;
 }
-
-
-
 
 
  function playAgain(){
