@@ -11,15 +11,15 @@ function startGame() {
         document.getElementById("category").style.display ="block"
         fetchCategory()
     }
-
 }
 
-function fetchCategory() {
-    const api = "https://the-trivia-api.com/v2/categories";
 
-    fetch(api)
-    .then(response =>response.json())
-    .then(data =>{
+async  function fetchCategory() {
+    const api = "https://the-trivia-api.com/v2/categories";
+    
+        const respose = await fetch(api);
+        const data = await respose.json()
+
         const categorySelect = document.getElementById("choose-category")
         categorySelect.innerHTML = "";
 
@@ -33,80 +33,105 @@ function fetchCategory() {
             categorySelect.appendChild(option);
         }
         console.log(data);
-    })
-    .catch(error=> console.error("error", error))
 };
+
+
 
 let easyQuestions = [];
 let mediumQuestions = [];
 let hardQuestions = [];
 let currentQ=[]
 
-function fetchQuestions(){
-   const categorySelect= document.getElementById("choose-category").value;
-   const easy = `https://the-trivia-api.com/api/questions?categories=${categorySelect}&limit=2&difficulty=easy`;
-   const medium = `https://the-trivia-api.com/api/questions?categories=${categorySelect}&limit=2&difficulty=medium`;
-   const hard = `https://the-trivia-api.com/api/questions?categories=${categorySelect}&limit=2&difficulty=hard`;
 
-   fetch(easy)
-   .then(response => response.json())
-   .then(data => {
-     easyQuestions = data;
-      console.log('Easy questions fetched:', easyQuestions);
-      return fetch(medium);
-   })
-   .then(response => response.json())
-   .then(data => {
-       mediumQuestions = data;
-      console.log('Medium questions fetched:', mediumQuestions);
-      return fetch(hard);
-   })
-   .then(response => response.json())
-   .then(data => {
-     hardQuestions= data;
-      console.log('Hard questions fetched:', hardQuestions);
+async function fetchQuestions() {
+    const categorySelect = document.getElementById("choose-category").value;
+    const easy = `https://the-trivia-api.com/api/questions?categories=${categorySelect}&limit=2&difficulty=easy`;
+    const medium = `https://the-trivia-api.com/api/questions?categories=${categorySelect}&limit=2&difficulty=medium`;
+    const hard = `https://the-trivia-api.com/api/questions?categories=${categorySelect}&limit=2&difficulty=hard`;
 
-      // Combine all cquestions here
-      questions = [...easyQuestions, ...mediumQuestions, ...hardQuestions];
-      allAnswers= questions;
-      currentQ = 0;
-      console.log('All questions:', questions);
-      display()
-   })
-   .catch(error => {
-    console.log("Error fetching questions:", error);
-});
-}
+    try {
+        const easyResponse = await fetch(easy);
+        easyQuestions = await easyResponse.json();
 
+        const mediumResponse = await fetch(medium);
+        mediumQuestions = await mediumResponse.json();
 
-let questions = [];
-let presentPlayer = 0;
-let currQuesIn = 0;
+        const hardResponse = await fetch(hard);
+        hardQuestions = await hardResponse.json();
 
-function display() {
-    if (currQuesIn < questions.length) {
-        const questionData = questions[currQuesIn];
-        document.getElementById("category").style.display = "none";
-        document.getElementById("all-questions").style.display = "block";
-        document.getElementById("question").textContent = `Question: ${questionData.question}`;
-        // document.getElementById("player2-answer").style.display = "none";
+        // Combine all questions
+        questions = [...easyQuestions, ...mediumQuestions, ...hardQuestions];
+        console.log('All questions fetched:', questions);
 
-
-        if (presentPlayer === 1) {
-            document.getElementById("player1-answer").style.display = "none";
-            document.getElementById("player2-answer").value = "";
-            document.getElementById("player2-answer").style.display = "block";
-            document.getElementById("player1-answer").focus();
-        } else {
-            document.getElementById("player1-answer").value = "";
-            document.getElementById("player1-answer").style.display = "block";
-            document.getElementById("player2-answer").style.display = "none";
-            document.getElementById("player1-answer").focus();
-        }
-    } else {   
-        
+        currQuesIn = 0;
+        presentPlayer = 0; 
+        getQuestion(); 
+    } catch (error) {
+        console.error("Error fetching questions:", error);
     }
 }
+
+function getQuestion() {
+    document.getElementById('next-question').style.display = 'none';
+    if (currQuesIn < questions.length) {
+        const currentQuestion = questions[currQuesIn];
+        const currentPlayerName = presentPlayer === 0 ? 
+            document.getElementById("player1").value || "Player 1" :
+            document.getElementById("player2").value || "Player 2";
+
+        // Display question
+        document.getElementById('question').innerHTML = `
+            <h4>This question is for (${currentPlayerName})</h4>
+            <h5>${currentQuestion.question}</h5>
+            <h6 style="color:#171435">( Difficulty: ${currentQuestion.difficulty} )</h6>
+        `;
+
+        // Display options
+        const answersDiv = document.getElementById('player1-options');
+        answersDiv.innerHTML = '';
+        const allAnswers = [...currentQuestion.incorrectAnswers, currentQuestion.correctAnswer];
+        (allAnswers);
+
+        allAnswers.forEach(answer => {
+            const button = document.createElement('button');
+            button.className = 'answer-button';
+            button.textContent = answer;
+            button.onclick = () => matchAnswer(answer); 
+            answersDiv.appendChild(button);
+        });
+        
+        document.getElementById("category").style.display = "none";
+        document.getElementById("all-questions").style.display = "block";
+    } 
+    else {
+        showSubmitBtn();
+    }
+}
+
+
+function matchAnswer(selectedAnswer) {
+    const currentQuestion = questions[currQuesIn];
+    const correctAnswer = currentQuestion.correctAnswer;
+
+    // Check if the answer is correct
+    if (selectedAnswer === correctAnswer) {
+        if (currentQuestion.difficulty === 'easy') {
+            scores[presentPlayer === 0 ? 'player1' : 'player2'] += 10;
+        } else if (currentQuestion.difficulty === 'medium') {
+            scores[presentPlayer === 0 ? 'player1' : 'player2'] += 15;
+        } else {
+            scores[presentPlayer === 0 ? 'player1' : 'player2'] += 20;
+        }
+    }
+
+    updateScoreDisplay();
+
+    // Move to the next question
+    currQuesIn++;
+    presentPlayer = presentPlayer === 0 ? 1 : 0; // Switch player
+    getQuestion();
+}
+
 
 var  player1Answer
 let scores = {
@@ -118,6 +143,7 @@ function updateScoreDisplay() {
     document.getElementById("player1-score").textContent = `Player 1 Score: ${scores.player1}`;
     document.getElementById("player2-score").textContent = `Player 2 Score: ${scores.player2}`;
 }
+
 
 var allAnswers;
 
@@ -169,14 +195,13 @@ function nextQuestion() {
     presentPlayer = presentPlayer === 1 ? 2 : 1;
     
     display();
-
 }
+
 
 
 function submitAnswers() {
 
     document.getElementById("submit").style.display = "block";
-    document.getElementById("next").style.display = "block";
     showMarks();
 }
 
@@ -185,7 +210,6 @@ function showMarks() {
     document.getElementById("all-questions").style.display = "none";
     document.getElementById("results").style.display = "block";
 
-    
     // Get player names
     const player1Name = document.getElementById("player1").value || "Player 1";
     const player2Name = document.getElementById("player2").value || "Player 2";
@@ -198,12 +222,11 @@ function showMarks() {
     } else {
         winner = "No one";
     }
-
+    
     document.getElementById("player1-score").textContent = `Player 1 (${player1Name}) Score: ${scores.player1}`;
     document.getElementById("player2-score").textContent = `Player 2 (${player2Name}) Score: ${scores.player2}`;
     document.getElementById("winner").textContent = `Winner: ${winner}`;
 }
-
 
  function playAgain(){
     window.location.reload()
