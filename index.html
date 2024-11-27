@@ -27,11 +27,12 @@
 
     <div id="all-questions" style="display: none;">
         <h2 id="category-title"></h2>
-        <p id="question"></p>
-        <input type="text" id="player1-answer" placeholder="Player 1 Answer">
-        <input type="text" id="player2-answer" placeholder="Player 2 Answer"><br>
+        <p id="question" style="color:#164E63"></p>
+        <div id="player1-options"></div>
+        <br>
+        <button id="next-question" style="display: none;" onclick="getQuestion()">Next Question</button>
         <button onclick="submitAnswers()" id="submit">Submit Answers</button>
-        <button onclick="nextQuestion()" id="next">Next Question</button>
+        <!-- <button onclick="nextQuestion()" id="next">Next Question</button> -->
     </div>
 
     <div id="scores">
@@ -40,21 +41,13 @@
     </div>
 
     <div id="results" style="display:none;">
-        <!-- <p id="player1-score"></p>
-        <p id="player2-score"></p> -->
         <p id="winner"></p>
         <button onclick="playAgain()">Play Again</button>
+
     </div>
 </div>
+
 <script src="index.js"></script>
+
 </body>
 </html>
-
-
-
-
-  
-
-
-
-  
